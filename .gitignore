@@ -1,0 +1,143 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Pytest
+.pytest_cache/
+
+# Coverage
+.coverage
+htmlcov/
+.coverage.*
+
+# Mypy
+.mypy_cache/
+
+# Ruff
+.ruff_cache/
+
+# UV
+.uv-cache/
+
+# =========================
+# FastAPI / Backend
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+
+# Alembic
+alembic/versions/*.pyc
+
+# Logs
+*.log
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# =========================
+# Node.js / Frontend
+# =========================
+node_modules/
+
+# Build Output
+dist/
+build/
+
+# Vite
+.vite/
+.vite-temp/
+
+# npm / pnpm / yarn
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# IDE
+# =========================
+.vscode/
+.idea/
+
+# JetBrains
+*.iml
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Testing
+# =========================
+coverage/
+*.lcov
+
+# =========================
+# Temporary Files
+# =========================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# =========================
+# Archives
+# =========================
+*.zip
+*.tar
+*.gz
+*.rar
+*.7z
+
+# =========================
+# Python Package Artifacts
+# =========================
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# =========================
+# Local Runtime Files
+# =========================
+backend/*.db
+backend/*.sqlite3
+
+# =========================
+# Optional AI/Agent Files
+# （如果 skills 是团队共享配置，
+# 不建议忽略）
+# =========================
+# .agents/cache/
+# .agents/logs/
+
+# Secrets
+*.pem
+*.key
+*.crt
+secrets/
+credentials.json
+
+# Docker
+.docker/
+
+# Local uploads
+uploads/
+media/
+static/uploads/
+
+infra\docker-compose.yml
