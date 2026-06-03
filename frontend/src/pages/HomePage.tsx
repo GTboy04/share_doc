@@ -169,8 +169,8 @@ export function HomePage({
                         {new Date(resource.updated_at).toLocaleDateString("zh-CN")}
                       </span>
                     </td>
-                    <td>
-                      <Button type="link">
+                    <td className="resource-table__action-cell">
+                      <Button type="link" className="resource-table__action-button">
                         <Link to={`/resources/${resource.id}`}>查看详情</Link>
                       </Button>
                     </td>
