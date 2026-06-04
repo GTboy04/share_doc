@@ -58,6 +58,8 @@ def test_public_resources_only_return_active_items(client, admin_headers):
     assert payload["total"] == 1
     assert payload["items"][0]["title"] == "可见资源"
     assert payload["items"][0]["year"] == 2026
+    assert payload["items"][0]["copy_count_total"] == 0
+    assert payload["items"][0]["links"][0]["copy_count"] == 0
 
 
 def test_public_resources_can_search_by_keyword(client, admin_headers):
@@ -245,5 +247,134 @@ def test_resource_links_allow_multiple_platforms_and_optional_url(client, admin_
     assert len(payload["links"]) == 2
     assert payload["links"][0]["platform_type"] == "quark"
     assert payload["links"][0]["custom_title"] == "夸克主链"
+    assert payload["links"][0]["copy_count"] == 0
     assert payload["links"][1]["platform_type"] == "baidu"
     assert payload["links"][1]["url"] is None
+    assert payload["copy_count_total"] == 0
+
+
+def test_public_resource_link_copy_count_can_increment(client, admin_headers):
+    category = seed_category(client, admin_headers)
+    resource = client.post(
+        "/api/admin/resources",
+        headers=admin_headers,
+        json={
+            "title": "可复制资源",
+            "category_id": category["id"],
+            "year": 2026,
+            "description": "desc",
+            "tags": "tag",
+            "links": sample_links(),
+            "status": "active",
+        },
+    ).json()
+    link_id = resource["links"][0]["id"]
+
+    copy_response = client.post(f"/api/resources/{resource['id']}/links/{link_id}/copy")
+    detail_response = client.get(f"/api/resources/{resource['id']}")
+
+    assert copy_response.status_code == 200
+    assert copy_response.json() == {"link_id": link_id, "copy_count": 1}
+    assert detail_response.status_code == 200
+    assert detail_response.json()["copy_count_total"] == 1
+    assert detail_response.json()["links"][0]["copy_count"] == 1
+
+
+def test_public_resource_link_copy_count_rejects_mismatched_link(client, admin_headers):
+    category = seed_category(client, admin_headers)
+    first_resource = client.post(
+        "/api/admin/resources",
+        headers=admin_headers,
+        json={
+            "title": "资源一",
+            "category_id": category["id"],
+            "year": 2026,
+            "description": "desc",
+            "tags": "tag",
+            "links": sample_links(),
+            "status": "active",
+        },
+    ).json()
+    second_resource = client.post(
+        "/api/admin/resources",
+        headers=admin_headers,
+        json={
+            "title": "资源二",
+            "category_id": category["id"],
+            "year": 2025,
+            "description": "desc",
+            "tags": "tag",
+            "links": sample_links(),
+            "status": "active",
+        },
+    ).json()
+
+    response = client.post(f"/api/resources/{first_resource['id']}/links/{second_resource['links'][0]['id']}/copy")
+
+    assert response.status_code == 404
+
+
+def test_public_resource_link_copy_count_rejects_non_active_resource(client, admin_headers):
+    category = seed_category(client, admin_headers)
+    resource = client.post(
+        "/api/admin/resources",
+        headers=admin_headers,
+        json={
+            "title": "隐藏复制资源",
+            "category_id": category["id"],
+            "year": 2024,
+            "description": "desc",
+            "tags": "tag",
+            "links": sample_links(),
+            "status": "hidden",
+        },
+    ).json()
+
+    response = client.post(f"/api/resources/{resource['id']}/links/{resource['links'][0]['id']}/copy")
+
+    assert response.status_code == 404
+
+
+def test_admin_resource_update_preserves_existing_link_copy_count(client, admin_headers):
+    category = seed_category(client, admin_headers)
+    resource = client.post(
+        "/api/admin/resources",
+        headers=admin_headers,
+        json={
+            "title": "可编辑资源",
+            "category_id": category["id"],
+            "year": 2026,
+            "description": "desc",
+            "tags": "tag",
+            "links": sample_links(),
+            "status": "active",
+        },
+    ).json()
+    first_link = resource["links"][0]
+    client.post(f"/api/resources/{resource['id']}/links/{first_link['id']}/copy")
+
+    update_response = client.put(
+        f"/api/admin/resources/{resource['id']}",
+        headers=admin_headers,
+        json={
+            "title": "可编辑资源",
+            "category_id": category["id"],
+            "year": 2026,
+            "description": "new desc",
+            "tags": "tag,new",
+            "links": [
+                {
+                    "id": first_link["id"],
+                    "platform_type": "quark",
+                    "custom_title": "夸克主链-更新",
+                    "url": "https://pan.quark.cn/s/demo-updated",
+                    "sort_order": 0,
+                }
+            ],
+            "status": "active",
+        },
+    )
+
+    assert update_response.status_code == 200
+    assert update_response.json()["links"][0]["copy_count"] == 1
+    assert update_response.json()["copy_count_total"] == 1

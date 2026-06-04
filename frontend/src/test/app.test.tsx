@@ -19,6 +19,7 @@ const resourcesResponse = {
           custom_title: "夸克主链",
           url: "https://pan.quark.cn/s/demo",
           sort_order: 0,
+          copy_count: 3,
         },
         {
           id: 102,
@@ -27,8 +28,10 @@ const resourcesResponse = {
           custom_title: "百度备用",
           url: null,
           sort_order: 1,
+          copy_count: 1,
         },
       ],
+      copy_count_total: 4,
       status: "active",
       category: {
         id: 1,
@@ -133,6 +136,7 @@ describe("app routes", () => {
     expect(screen.getByText("当前登录")).toBeInTheDocument();
     expect(screen.getByText("admin")).toBeInTheDocument();
     expect(await screen.findByText("微信公众号【27红宝书】：2027考研英语红宝书PDF合集")).toBeInTheDocument();
+    expect(screen.getByText("4")).toBeInTheDocument();
   });
 
   it("disables notify action for requests that are not done", async () => {
@@ -311,6 +315,9 @@ describe("app routes", () => {
 
     vi.spyOn(window, "fetch").mockImplementation((input) => {
       const url = String(input);
+      if (url.includes("/api/resources/1/links/101/copy")) {
+        return Promise.resolve(new Response(JSON.stringify({ link_id: 101, copy_count: 4 })));
+      }
       if (url.includes("/api/resources/1")) {
         return Promise.resolve(
           new Response(
@@ -339,6 +346,7 @@ describe("app routes", () => {
     expect(await screen.findByText("资源详情")).toBeInTheDocument();
     expect(screen.getByText("夸克主链")).toBeInTheDocument();
     expect(screen.getByText("百度备用")).toBeInTheDocument();
+    expect(screen.getByText("已复制 3 次")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /访问资源链接/ })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /复制夸克主链链接/ }));
@@ -346,6 +354,48 @@ describe("app routes", () => {
     await waitFor(() => {
       expect(writeText).toHaveBeenCalledWith("https://pan.quark.cn/s/demo");
     });
+    await waitFor(() => {
+      expect(screen.getByText("已复制 4 次")).toBeInTheDocument();
+    });
     expect(screen.getByRole("button", { name: /复制百度备用链接/ })).toBeDisabled();
+  });
+
+  it("keeps copy success when copy count sync fails", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, {
+      clipboard: {
+        writeText,
+      },
+    });
+
+    vi.spyOn(window, "fetch").mockImplementation((input) => {
+      const url = String(input);
+      if (url.includes("/api/resources/1/links/101/copy")) {
+        return Promise.resolve(new Response(JSON.stringify({ detail: "failed" }), { status: 500 }));
+      }
+      if (url.includes("/api/resources/1")) {
+        return Promise.resolve(new Response(JSON.stringify(resourcesResponse.items[0])));
+      }
+      if (url.includes("/api/resources")) {
+        return Promise.resolve(new Response(JSON.stringify(resourcesResponse)));
+      }
+      if (url.includes("/api/categories")) {
+        return Promise.resolve(new Response(JSON.stringify(categoriesResponse)));
+      }
+      return Promise.resolve(new Response(JSON.stringify({})));
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/resources/1"]}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: /复制夸克主链链接/ }));
+
+    await waitFor(() => {
+      expect(writeText).toHaveBeenCalledWith("https://pan.quark.cn/s/demo");
+    });
+    expect(screen.getByText("已复制 3 次")).toBeInTheDocument();
   });
 });

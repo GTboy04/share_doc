@@ -1,13 +1,13 @@
-import { App as AntApp, Button, Card, Input, Typography } from "antd";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {App as AntApp, Button, Card, Input, Typography} from "antd";
+import {useState} from "react";
+import {useNavigate} from "react-router-dom";
 
-import { PageHero } from "../components/Surface";
-import { api } from "../lib/api";
+import {PageHero} from "../components/Surface";
+import {api} from "../lib/api";
 
 export function RequestFormPage() {
   const navigate = useNavigate();
-  const { message } = AntApp.useApp();
+  const {message} = AntApp.useApp();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -31,7 +31,7 @@ export function RequestFormPage() {
   return (
     <div className="page-stack">
       <PageHero
-        eyebrow="Request Intake"
+        eyebrow=""
         title="提交需求"
         description="告诉我们你希望补充的资料类型、用途与联系方式，我们会在整理核验后尽快补充到平台。"
         align="center"
@@ -51,7 +51,9 @@ export function RequestFormPage() {
           <Input
             aria-label="需求标题"
             value={formData.title}
-            onChange={(event) => setFormData((value) => ({ ...value, title: event.target.value }))}
+            onChange={(event) =>
+              setFormData((value) => ({...value, title: event.target.value}))
+            }
             placeholder="例如：求 1000 题 PDF"
           />
           <label className="field-label">需求描述</label>
@@ -59,7 +61,12 @@ export function RequestFormPage() {
             aria-label="需求描述"
             rows={5}
             value={formData.description}
-            onChange={(event) => setFormData((value) => ({ ...value, description: event.target.value }))}
+            onChange={(event) =>
+              setFormData((value) => ({
+                ...value,
+                description: event.target.value,
+              }))
+            }
             placeholder="请描述资源内容、用途、格式等"
           />
           <div className="request-form-grid__split">
@@ -68,7 +75,12 @@ export function RequestFormPage() {
               <Input
                 aria-label="邮箱"
                 value={formData.contact_email}
-                onChange={(event) => setFormData((value) => ({ ...value, contact_email: event.target.value }))}
+                onChange={(event) =>
+                  setFormData((value) => ({
+                    ...value,
+                    contact_email: event.target.value,
+                  }))
+                }
                 placeholder="可选，用于后续处理通知"
               />
             </div>
@@ -77,13 +89,21 @@ export function RequestFormPage() {
               <Input
                 aria-label="其他联系方式"
                 value={formData.contact_text}
-                onChange={(event) => setFormData((value) => ({ ...value, contact_text: event.target.value }))}
+                onChange={(event) =>
+                  setFormData((value) => ({
+                    ...value,
+                    contact_text: event.target.value,
+                  }))
+                }
                 placeholder="微信 / QQ / 备注"
               />
             </div>
           </div>
           <div className="form-actions">
-            <Button type="primary" htmlType="submit" disabled={!formData.title || !formData.description}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={!formData.title || !formData.description}>
               提交需求
             </Button>
           </div>

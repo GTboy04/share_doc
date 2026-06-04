@@ -18,6 +18,7 @@ export interface ResourceLink {
   custom_title: string;
   url: string | null;
   sort_order: number;
+  copy_count: number;
 }
 
 export interface Resource {
@@ -27,6 +28,7 @@ export interface Resource {
   description: string;
   tags: string;
   links: ResourceLink[];
+  copy_count_total: number;
   status: ResourceStatus;
   category: Category;
   created_at: string;

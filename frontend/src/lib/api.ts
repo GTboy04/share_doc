@@ -34,6 +34,10 @@ export const api = {
   listPublicResources: (params: URLSearchParams) =>
     request<PaginatedResponse<Resource>>(`/resources?${params.toString()}`),
   getPublicResource: (id: string) => request<Resource>(`/resources/${id}`),
+  incrementResourceLinkCopyCount: (resourceId: number, linkId: number) =>
+    request<{ link_id: number; copy_count: number }>(`/resources/${resourceId}/links/${linkId}/copy`, {
+      method: "POST",
+    }),
   listPublicCategories: () => request<{ items: Category[] }>("/categories"),
   submitRequest: (payload: Record<string, unknown>) =>
     request<UserRequest>("/requests", { method: "POST", body: JSON.stringify(payload) }),

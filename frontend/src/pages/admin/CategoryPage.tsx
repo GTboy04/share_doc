@@ -1,14 +1,14 @@
-import { App as AntApp, Button, Card, Input, Space } from "antd";
-import { useEffect, useState } from "react";
+import {App as AntApp, Button, Card, Input, Space} from "antd";
+import {useEffect, useState} from "react";
 
-import { PageHero, StatusBadge } from "../../components/Surface";
-import { api } from "../../lib/api";
-import type { Category } from "../../types";
+import {PageHero, StatusBadge} from "../../components/Surface";
+import {api} from "../../lib/api";
+import type {Category} from "../../types";
 
 export function CategoryPage() {
   const [items, setItems] = useState<Category[]>([]);
   const [editing, setEditing] = useState<Category | null>(null);
-  const { message } = AntApp.useApp();
+  const {message} = AntApp.useApp();
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -28,14 +28,14 @@ export function CategoryPage() {
   const onSave = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const values = { ...formData, sort_order: Number(formData.sort_order) };
+      const values = {...formData, sort_order: Number(formData.sort_order)};
       if (editing) {
         await api.updateCategory(editing.id, values);
       } else {
         await api.createCategory(values);
       }
       setEditing(null);
-      setFormData({ name: "", slug: "", sort_order: "0", status: "active" });
+      setFormData({name: "", slug: "", sort_order: "0", status: "active"});
       await load();
     } catch (error) {
       message.error(error instanceof Error ? error.message : "保存失败");
@@ -54,7 +54,7 @@ export function CategoryPage() {
   return (
     <div className="page-stack page-stack--compact">
       <PageHero
-        eyebrow="Category Governance"
+        eyebrow=""
         title="分类管理"
         description="维护前台分类名称、排序与显示状态，保证资源检索入口始终清晰稳定。"
       />
@@ -65,26 +65,57 @@ export function CategoryPage() {
             type="primary"
             onClick={() => {
               setEditing(null);
-              setFormData({ name: "", slug: "", sort_order: "0", status: "active" });
-            }}
-          >
+              setFormData({
+                name: "",
+                slug: "",
+                sort_order: "0",
+                status: "active",
+              });
+            }}>
             新增分类
           </Button>
-        }
-      >
-        <form className="simple-form compact-form admin-form-grid" onSubmit={onSave}>
+        }>
+        <form
+          className="simple-form compact-form admin-form-grid"
+          onSubmit={onSave}>
           <label className="field-label">名称</label>
-          <Input value={formData.name} onChange={(event) => setFormData((value) => ({ ...value, name: event.target.value }))} />
+          <Input
+            value={formData.name}
+            onChange={(event) =>
+              setFormData((value) => ({...value, name: event.target.value}))
+            }
+          />
           <label className="field-label">Slug</label>
-          <Input value={formData.slug} onChange={(event) => setFormData((value) => ({ ...value, slug: event.target.value }))} />
+          <Input
+            value={formData.slug}
+            onChange={(event) =>
+              setFormData((value) => ({...value, slug: event.target.value}))
+            }
+          />
           <div className="admin-form-grid__split">
             <div>
               <label className="field-label">排序</label>
-              <Input value={formData.sort_order} onChange={(event) => setFormData((value) => ({ ...value, sort_order: event.target.value }))} />
+              <Input
+                value={formData.sort_order}
+                onChange={(event) =>
+                  setFormData((value) => ({
+                    ...value,
+                    sort_order: event.target.value,
+                  }))
+                }
+              />
             </div>
             <div>
               <label className="field-label">状态</label>
-              <select className="field-select" value={formData.status} onChange={(event) => setFormData((value) => ({ ...value, status: event.target.value }))}>
+              <select
+                className="field-select"
+                value={formData.status}
+                onChange={(event) =>
+                  setFormData((value) => ({
+                    ...value,
+                    status: event.target.value,
+                  }))
+                }>
                 <option value="active">启用中</option>
                 <option value="hidden">已隐藏</option>
               </select>
@@ -128,11 +159,13 @@ export function CategoryPage() {
                             sort_order: String(record.sort_order),
                             status: record.status,
                           });
-                        }}
-                      >
+                        }}>
                         编辑
                       </Button>
-                      <Button type="link" danger onClick={() => void onDelete(record.id)}>
+                      <Button
+                        type="link"
+                        danger
+                        onClick={() => void onDelete(record.id)}>
                         删除
                       </Button>
                     </Space>

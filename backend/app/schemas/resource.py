@@ -7,6 +7,7 @@ from app.schemas.category import CategoryResponse
 
 
 class ResourceLinkBase(BaseModel):
+    id: int | None = None
     platform_type: ResourceLinkPlatform
     custom_title: str = Field(default="", max_length=255)
     url: HttpUrl | None = None
@@ -24,6 +25,7 @@ class ResourceLinkResponse(BaseModel):
     custom_title: str
     url: str | None
     sort_order: int
+    copy_count: int
 
 
 class ResourceBase(BaseModel):
@@ -51,6 +53,7 @@ class ResourceResponse(BaseModel):
     description: str
     tags: str
     links: list[ResourceLinkResponse]
+    copy_count_total: int
     status: ResourceStatus
     category: CategoryResponse
     created_at: datetime
@@ -72,6 +75,7 @@ class ResourceResponse(BaseModel):
                         custom_title=item.custom_title,
                         url=item.url,
                         sort_order=item.sort_order,
+                        copy_count=item.copy_count,
                     )
                 )
             data = {
@@ -81,6 +85,7 @@ class ResourceResponse(BaseModel):
                 "description": obj.description,
                 "tags": obj.tags,
                 "links": obj_links,
+                "copy_count_total": sum(item.copy_count for item in obj_links),
                 "status": obj.status,
                 "category": obj.category,
                 "created_at": obj.created_at,
@@ -95,3 +100,8 @@ class ResourceListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class ResourceLinkCopyResponse(BaseModel):
+    link_id: int
+    copy_count: int

@@ -20,7 +20,7 @@ export function ResourceDetailPage() {
     return <Spin className="route-spinner" />;
   }
 
-  const copyLink = async (title: string, url: string | null) => {
+  const copyLink = async (linkId: number, title: string, url: string | null) => {
     if (!url) {
       return;
     }
@@ -29,6 +29,26 @@ export function ResourceDetailPage() {
       message.success(`${title} 链接已复制`);
     } catch {
       message.error("复制失败，请手动复制");
+      return;
+    }
+
+    try {
+      const result = await api.incrementResourceLinkCopyCount(resource.id, linkId);
+      setResource((current) => {
+        if (!current) {
+          return current;
+        }
+        const nextLinks = current.links.map((link) =>
+          link.id === result.link_id ? { ...link, copy_count: result.copy_count } : link,
+        );
+        return {
+          ...current,
+          links: nextLinks,
+          copy_count_total: nextLinks.reduce((sum, link) => sum + link.copy_count, 0),
+        };
+      });
+    } catch (error) {
+      console.error("Failed to sync resource link copy count", error);
     }
   };
 
@@ -86,6 +106,9 @@ export function ResourceDetailPage() {
                         <Typography.Paragraph className="detail-link-card__url">
                           {item.url ?? "暂未填写链接"}
                         </Typography.Paragraph>
+                        <Typography.Paragraph className="detail-link-card__hint">
+                          已复制 {item.copy_count} 次
+                        </Typography.Paragraph>
                       </div>
                       <Button
                         type="primary"
@@ -94,7 +117,7 @@ export function ResourceDetailPage() {
                         icon={<CopyOutlined />}
                         disabled={!item.url}
                         aria-label={`复制${title}链接`}
-                        onClick={() => void copyLink(title, item.url)}
+                        onClick={() => void copyLink(item.id, title, item.url)}
                       >
                         复制链接
                       </Button>

@@ -100,16 +100,20 @@ async def update_resource(
     payload_data = payload.model_dump(exclude={"links"})
     for key, value in payload_data.items():
         setattr(resource, key, value)
-    resource.links.clear()
+
+    existing_links = {link.id: link for link in resource.links}
+    next_links: list[ResourceLink] = []
     for index, link in enumerate(payload.links):
-        resource.links.append(
-            ResourceLink(
-                platform_type=link.platform_type.value,
-                custom_title=link.custom_title,
-                url=str(link.url) if link.url is not None else None,
-                sort_order=link.sort_order if link.sort_order is not None else index,
-            )
-        )
+        persisted_link = existing_links.get(link.id) if link.id is not None else None
+        if persisted_link is None:
+            persisted_link = ResourceLink()
+        persisted_link.platform_type = link.platform_type.value
+        persisted_link.custom_title = link.custom_title
+        persisted_link.url = str(link.url) if link.url is not None else None
+        persisted_link.sort_order = link.sort_order if link.sort_order is not None else index
+        next_links.append(persisted_link)
+
+    resource.links = next_links
     await db.commit()
     await db.refresh(resource)
     resource = await db.scalar(

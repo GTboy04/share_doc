@@ -1,11 +1,11 @@
-import { ClockCircleOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Card, Input, Space, Tag, Typography } from "antd";
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import {ClockCircleOutlined, SearchOutlined} from "@ant-design/icons";
+import {Button, Card, Input, Space, Tag, Typography} from "antd";
+import {useEffect, useState} from "react";
+import {Link, useNavigate, useSearchParams} from "react-router-dom";
 
-import { PageHero } from "../components/Surface";
-import { api } from "../lib/api";
-import type { Category, Resource } from "../types";
+import {PageHero} from "../components/Surface";
+import {api} from "../lib/api";
+import type {Category, Resource} from "../types";
 
 interface HomePageProps {
   pageTitle?: string;
@@ -26,11 +26,15 @@ export function HomePage({
   const [keyword, setKeyword] = useState(searchParams.get("keyword") ?? "");
   const [page, setPage] = useState(Number(searchParams.get("page") ?? "1"));
   const [year, setYear] = useState(searchParams.get("year") ?? "");
-  const [activeCategory, setActiveCategory] = useState(searchParams.get("category_slug") ?? "");
+  const [activeCategory, setActiveCategory] = useState(
+    searchParams.get("category_slug") ?? "",
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    void api.listPublicCategories().then((result) => setCategories(result.items));
+    void api
+      .listPublicCategories()
+      .then((result) => setCategories(result.items));
   }, []);
 
   useEffect(() => {
@@ -68,7 +72,7 @@ export function HomePage({
   return (
     <div className="page-stack">
       <PageHero
-        eyebrow="Resource Discovery"
+        eyebrow=""
         title={pageTitle}
         description={pageDescription}
         extra={
@@ -80,7 +84,7 @@ export function HomePage({
       />
 
       <Card className="content-card content-card--elevated">
-        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <Space direction="vertical" size="large" style={{width: "100%"}}>
           <div className="search-panel">
             <div className="search-panel__heading">
               <Typography.Title level={5}>检索条件</Typography.Title>
@@ -106,22 +110,27 @@ export function HomePage({
                   id="public-year-filter"
                   aria-label="年份筛选"
                   value={year}
-                  onChange={(event) => setYear(event.target.value.replace(/[^\d]/g, "").slice(0, 4))}
+                  onChange={(event) =>
+                    setYear(
+                      event.target.value.replace(/[^\d]/g, "").slice(0, 4),
+                    )
+                  }
                   placeholder="例如：2027"
                   inputMode="numeric"
                 />
               </div>
             </div>
             <Space wrap className="category-tag-row">
-              <Tag.CheckableTag checked={activeCategory === ""} onChange={() => setActiveCategory("")}>
+              <Tag.CheckableTag
+                checked={activeCategory === ""}
+                onChange={() => setActiveCategory("")}>
                 全部
               </Tag.CheckableTag>
               {categories.map((category) => (
                 <Tag.CheckableTag
                   key={category.id}
                   checked={activeCategory === category.slug}
-                  onChange={() => setActiveCategory(category.slug)}
-                >
+                  onChange={() => setActiveCategory(category.slug)}>
                   {category.name}
                 </Tag.CheckableTag>
               ))}
@@ -137,7 +146,9 @@ export function HomePage({
           <div className="section-heading">
             <div>
               <Typography.Title level={5}>资源列表</Typography.Title>
-              <Typography.Paragraph>点击标题或操作按钮进入详情页，再复制所需平台链接。</Typography.Paragraph>
+              <Typography.Paragraph>
+                点击标题或操作按钮进入详情页，再复制所需平台链接。
+              </Typography.Paragraph>
             </div>
             <div className="result-meta">共 {total} 条结果</div>
           </div>
@@ -158,19 +169,27 @@ export function HomePage({
                 {resources.map((resource) => (
                   <tr key={resource.id}>
                     <td className="resource-table__title-cell">
-                      <Link to={`/resources/${resource.id}`}>{resource.title}</Link>
+                      <Link to={`/resources/${resource.id}`}>
+                        {resource.title}
+                      </Link>
                     </td>
                     <td>{resource.year}</td>
                     <td>{resource.category.name}</td>
-                    <td className="resource-table__description">{resource.description}</td>
+                    <td className="resource-table__description">
+                      {resource.description}
+                    </td>
                     <td>
                       <span className="resource-table__time">
                         <ClockCircleOutlined />
-                        {new Date(resource.updated_at).toLocaleDateString("zh-CN")}
+                        {new Date(resource.updated_at).toLocaleDateString(
+                          "zh-CN",
+                        )}
                       </span>
                     </td>
                     <td className="resource-table__action-cell">
-                      <Button type="link" className="resource-table__action-button">
+                      <Button
+                        type="link"
+                        className="resource-table__action-button">
                         <Link to={`/resources/${resource.id}`}>查看详情</Link>
                       </Button>
                     </td>
@@ -181,13 +200,17 @@ export function HomePage({
           </div>
 
           <div className="pager">
-            <Button disabled={page <= 1} onClick={() => setPage((value) => value - 1)}>
+            <Button
+              disabled={page <= 1}
+              onClick={() => setPage((value) => value - 1)}>
               上一页
             </Button>
             <span>
               第 {page} 页 / 共 {Math.max(1, Math.ceil(total / 10))} 页
             </span>
-            <Button disabled={page >= Math.max(1, Math.ceil(total / 10))} onClick={() => setPage((value) => value + 1)}>
+            <Button
+              disabled={page >= Math.max(1, Math.ceil(total / 10))}
+              onClick={() => setPage((value) => value + 1)}>
               下一页
             </Button>
           </div>
