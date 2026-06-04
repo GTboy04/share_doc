@@ -1,16 +1,26 @@
-import { ArrowLeftOutlined, CopyOutlined, LinkOutlined } from "@ant-design/icons";
-import { App as AntApp, Button, Card, Descriptions, Space, Spin, Tag, Typography } from "antd";
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import {ArrowLeftOutlined, CopyOutlined, LinkOutlined} from "@ant-design/icons";
+import {
+  App as AntApp,
+  Button,
+  Card,
+  Descriptions,
+  Space,
+  Spin,
+  Tag,
+  Typography,
+} from "antd";
+import {useEffect, useRef, useState} from "react";
+import {Link, useParams} from "react-router-dom";
 
-import { PageHero } from "../components/Surface";
-import { api } from "../lib/api";
-import type { Resource } from "../types";
+import {PageHero} from "../components/Surface";
+import {api} from "../lib/api";
+import type {Resource} from "../types";
 
 export function ResourceDetailPage() {
-  const { id = "" } = useParams();
-  const { message } = AntApp.useApp();
+  const {id = ""} = useParams();
+  const {message} = AntApp.useApp();
   const [resource, setResource] = useState<Resource | null>(null);
+  const copyinRef = useRef(false);
 
   useEffect(() => {
     void api.getPublicResource(id).then(setResource);
@@ -20,35 +30,55 @@ export function ResourceDetailPage() {
     return <Spin className="route-spinner" />;
   }
 
-  const copyLink = async (linkId: number, title: string, url: string | null) => {
-    if (!url) {
+  const copyLink = async (
+    linkId: number,
+    title: string,
+    url: string | null,
+  ) => {
+    if (!url || copyinRef.current) {
       return;
     }
+
+    copyinRef.current = true;
+
     try {
       await navigator.clipboard.writeText(url);
       message.success(`${title} 链接已复制`);
     } catch {
       message.error("复制失败，请手动复制");
+      copyinRef.current = false;
       return;
     }
 
     try {
-      const result = await api.incrementResourceLinkCopyCount(resource.id, linkId);
+      const result = await api.incrementResourceLinkCopyCount(
+        resource.id,
+        linkId,
+      );
       setResource((current) => {
         if (!current) {
           return current;
         }
         const nextLinks = current.links.map((link) =>
-          link.id === result.link_id ? { ...link, copy_count: result.copy_count } : link,
+          link.id === result.link_id
+            ? {...link, copy_count: result.copy_count}
+            : link,
         );
         return {
           ...current,
           links: nextLinks,
-          copy_count_total: nextLinks.reduce((sum, link) => sum + link.copy_count, 0),
+          copy_count_total: nextLinks.reduce(
+            (sum, link) => sum + link.copy_count,
+            0,
+          ),
         };
       });
     } catch (error) {
       console.error("Failed to sync resource link copy count", error);
+    } finally {
+      setTimeout(() => {
+        copyinRef.current = true;
+      }, 3000); // 3秒后允许复制
     }
   };
 
@@ -68,16 +98,25 @@ export function ResourceDetailPage() {
         <div className="detail-layout">
           <div className="detail-layout__main">
             <Descriptions bordered column={1} className="detail-descriptions">
-              <Descriptions.Item label="年份">{resource.year}</Descriptions.Item>
-              <Descriptions.Item label="分类">{resource.category.name}</Descriptions.Item>
-              <Descriptions.Item label="描述">{resource.description}</Descriptions.Item>
+              <Descriptions.Item label="年份">
+                {resource.year}
+              </Descriptions.Item>
+              <Descriptions.Item label="分类">
+                {resource.category.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="描述">
+                {resource.description}
+              </Descriptions.Item>
               <Descriptions.Item label="标签">
                 <Space wrap>
-                  {resource.tags.split(",").filter(Boolean).map((tag) => (
-                    <Tag key={tag} className="detail-tag">
-                      {tag.trim()}
-                    </Tag>
-                  ))}
+                  {resource.tags
+                    .split(",")
+                    .filter(Boolean)
+                    .map((tag) => (
+                      <Tag key={tag} className="detail-tag">
+                        {tag.trim()}
+                      </Tag>
+                    ))}
                 </Space>
               </Descriptions.Item>
               <Descriptions.Item label="更新时间">
@@ -92,7 +131,11 @@ export function ResourceDetailPage() {
                 支持多个平台入口。点击复制链接，不直接打开外部网盘页面。
               </Typography.Paragraph>
               <div className="detail-links">
-                {resource.links.length === 0 ? <div className="detail-link-item detail-link-item--empty">暂未配置可复制链接</div> : null}
+                {resource.links.length === 0 ? (
+                  <div className="detail-link-item detail-link-item--empty">
+                    暂未配置可复制链接
+                  </div>
+                ) : null}
                 {resource.links.map((item) => {
                   const title = item.custom_title || item.platform_label;
                   return (
@@ -117,8 +160,7 @@ export function ResourceDetailPage() {
                         icon={<CopyOutlined />}
                         disabled={!item.url}
                         aria-label={`复制${title}链接`}
-                        onClick={() => void copyLink(item.id, title, item.url)}
-                      >
+                        onClick={() => void copyLink(item.id, title, item.url)}>
                         复制链接
                       </Button>
                     </div>
